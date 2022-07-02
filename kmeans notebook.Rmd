@@ -1,0 +1,64 @@
+---
+title: "K Means Clustering - R"
+output: html_notebook
+---
+
+# **Prepare Data**
+- REMOVE NULL VALUES 
+- NORMALIZE NUMERIC MEASURES (SCALE) TO PUT THEM ON THE SAME SCALE
+```{r}
+library(tidyverse)
+library(factoextra)
+library(cluster) 
+
+#load and prep data----
+df <- USArrests
+#omit nulls
+df <- na.omit(df)
+#normalize the data to put all numeric measures on the same scale (for comparison)
+df <- scale(df)
+df %>% head()
+```
+
+# **Determine Optimal Number of Clusters**
+plot number of clusters vs. total within sum of squares
+```{r}
+#method = wss ---> total within sum of squares
+fviz_nbclust(df, kmeans, method = "wss")
+```
+optimal k is 4
+
+# make this example reproducible
+```{r}
+set.seed(1)
+```
+
+# **perform k-means clustering with k = 4 clusters**
+```{r}
+km <- kmeans(df, centers = 4, nstart = 25) 
+#nstart = 25 recommended in documentation 
+#nstart option attempts multiple initial configurations and reports on the best one. 
+  #For example, adding nstart=25 will generate 25 initial random centroids and choose the best one for the algorithm
+
+km #view results
+```
+# **visualize clusters**
+plot results of final k-means model
+```{r}
+fviz_cluster(km, data = df)
+```
+
+find mean of each cluster
+```{r}
+aggregate(USArrests, by=list(cluster=km$cluster), mean)
+```
+
+Assign cluster number to original data
+```{r}
+final_data <- cbind(USArrests, cluster = km$cluster)
+```
+
+# VIEW FINAL CLUSTER DATA 
+```{r}
+final_data %>% head()
+```
